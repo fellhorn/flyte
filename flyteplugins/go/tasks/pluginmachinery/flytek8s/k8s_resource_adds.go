@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"strconv"
+	"strings"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -29,6 +30,18 @@ func GetContextEnvVars(ownerCtx context.Context) []v1.EnvVar {
 			},
 		)
 	}
+
+	if nodeID := contextutils.Value(ownerCtx, contextutils.NodeIDKey); nodeID != "" {
+		// Convert nodeID to the format as displayed in the UI
+		nodeID = strings.ReplaceAll(nodeID, "/", "-")
+		envVars = append(envVars,
+			v1.EnvVar{
+				Name:  "FLYTE_INTERNAL_NODE_ID",
+				Value: nodeID,
+			},
+		)
+	}
+
 	return envVars
 }
 
